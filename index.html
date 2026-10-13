@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OPD Register</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1B2230">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2230;
+    --ink-soft:#3A4358;
+    --paper:#F6F3EC;
+    --paper-raised:#FFFFFF;
+    --line:#DCD6C4;
+    --line-soft:#EAE5D6;
+    --green:#2F6F4E;
+    --green-bg:#E7F1EA;
+    --red:#A83A32;
+    --red-bg:#F7E9E7;
+    --mustard:#C98A2C;
+    --muted:#79725F;
+    --radius:3px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'IBM Plex Sans',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+  }
+  .stamp-font{font-family:'IBM Plex Mono',monospace;}
+
+  /* ===== Login ===== */
+  #login-screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .login-card{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:36px 32px;
+    width:100%;
+    max-width:380px;
+    position:relative;
+    box-shadow:0 1px 0 var(--line);
+  }
+  .login-card::before{
+    content:"";
+    position:absolute;
+    top:0;left:24px;right:24px;
+    height:3px;
+    background:repeating-linear-gradient(90deg,var(--mustard) 0 10px, transparent 10px 16px);
+  }
+  .register-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    font-size:13px;
+    color:var(--muted);
+    margin:0 0 2px;
+  }
+  .clinic-name{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    font-size:26px;
+    margin:0 0 24px;
+    letter-spacing:-0.01em;
+  }
+  label{
+    display:block;
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--muted);
+    margin:14px 0 5px;
+  }
+  select,input,textarea{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:#FCFBF7;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:14px;
+    color:var(--ink);
+  }
+  select:focus,input:focus,textarea:focus{
+    outline:2px solid var(--mustard);
+    outline-offset:1px;
+    background:#fff;
+  }
+  .btn{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:600;
+    font-size:12.5px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    border:1px solid var(--ink);
+    background:var(--ink);
+    color:#fff;
+    padding:11px 16px;
+    border-radius:var(--radius);
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+  }
+  .btn:hover{background:var(--ink-soft);}
+  .btn-outline{
+    background:transparent;
+    color:var(--ink);
+    border:1px solid var(--line);
+  }
+  .btn-outline:hover{border-color:var(--ink);}
+  .btn-danger{background:var(--red);border-color:var(--red);}
+  .btn-danger:hover{background:#8a2f29;}
+  .btn-sm{padding:6px 10px;font-size:11px;}
+  .btn-block{width:100%;margin-top:20px;}
+  .login-error{color:var(--red);font-size:12.5px;margin-top:10px;min-height:16px;}
+  .login-toggle{
+    text-align:center;margin-top:16px;font-size:12.5px;color:var(--muted);
+  }
+  .login-toggle a{color:var(--ink);text-decoration:underline;cursor:pointer;font-weight:600;}
+
+  /* ===== App shell ===== */
+  #app-screen{display:none;min-height:100vh;}
+  .topbar{
+    background:var(--ink);
+    color:#EFEBDD;
+    padding:14px 22px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .topbar .brand{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    letter-spacing:0.03em;
+    font-size:15px;
+  }
+  .topbar .who{
+    font-size:12.5px;
+    color:#B9B39E;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .topbar .who b{color:#EFEBDD;}
+  .logout-link{
+    color:#D9A25A;cursor:pointer;text-decoration:underline;font-weight:600;
+  }
+
+  .tabs{
+    display:flex;
+    background:#EFEADC;
+    border-bottom:1px solid var(--line);
+    padding:0 14px;
+    overflow-x:auto;
+  }
+  .tab{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    padding:13px 18px;
+    cursor:pointer;
+    color:var(--muted);
+    border-right:1px solid var(--line-soft);
+    white-space:nowrap;
+    position:relative;
+    background:linear-gradient(#EFEADC,#E7E1D0);
+    clip-path:polygon(6% 0,94% 0,100% 100%,0% 100%);
+  }
+  .tab.active{
+    color:var(--ink);
+    background:var(--paper);
+  }
+  .tab.active::after{
+    content:"";
+    position:absolute;
+    bottom:0;left:14%;right:14%;
+    height:3px;
+    background:var(--mustard);
+  }
+
+  .content{padding:22px;max-width:1180px;margin:0 auto;}
+  .card{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+    margin-bottom:18px;
+  }
+  .card h2{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:14px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin:0 0 16px;
+    padding-bottom:10px;
+    border-bottom:1px dashed var(--line);
+    color:var(--ink-soft);
+  }
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0 16px;}
+  .grid.g2{grid-template-columns:repeat(2,1fr);}
+  @media (max-width:720px){.grid,.grid.g2{grid-template-columns:1fr;}}
+  .full{grid-column:1/-1;}
+  .row-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+  .hint{font-size:11.5px;color:var(--muted);margin-top:3px;}
+
+  .searchbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+  .searchbar input{flex:1;min-width:200px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--muted);
+    text-align:left;
+    padding:8px 10px;
+    border-bottom:1px solid var(--ink);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:9px 10px;
+    border-bottom:1px solid var(--line-soft);
+    vertical-align:middle;
+  }
+  tbody tr:hover{background:#FBF9F3;}
+  .num{text-align:right;font-family:'IBM Plex Mono',monospace;}
+  .stamp{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    font-weight:700;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    padding:3px 8px;
+    border-radius:2px;
+    display:inline-block;
+    border:1.5px solid;
+    transform:rotate(-2deg);
+  }
+  .stamp.paid{color:var(--green);border-color:var(--green);background:var(--green-bg);}
+  .stamp.due{color:var(--red);border-color:var(--red);background:var(--red-bg);}
+  .empty-state{
+    text-align:center;padding:40px 20px;color:var(--muted);font-size:13.5px;
+  }
+  .empty-state b{display:block;color:var(--ink);font-size:15px;margin-bottom:6px;font-family:'IBM Plex Mono',monospace;}
+  .mini{display:flex;gap:6px;}
+  .mini input{width:78px;padding:6px 7px;font-size:12.5px;}
+  .toast{
+    position:fixed;bottom:20px;right:20px;
+    background:var(--ink);color:#fff;
+    padding:11px 18px;border-radius:var(--radius);
+    font-size:13px;font-family:'IBM Plex Mono',monospace;
+    box-shadow:0 4px 14px rgba(0,0,0,0.2);
+    z-index:50;opacity:0;transform:translateY(8px);
+    transition:all .25s ease;pointer-events:none;
+  }
+  .toast.show{opacity:1;transform:translateY(0);}
+  .totals-strip{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+  .total-pill{
+    background:var(--paper-raised);border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px 18px;min-width:140px;
+  }
+  .total-pill .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:0.05em;color:var(--muted);font-family:'IBM Plex Mono',monospace;}
+  .total-pill .val{font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;margin-top:3px;}
+  .loading{padding:40px;text-align:center;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:12.5px;}
+  .staff-manage{margin-top:18px;border-top:1px dashed var(--line);padding-top:14px;}
+  .staff-list-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:13px;}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-card">
+    <p class="register-title">Reception Desk</p>
+    <h1 class="clinic-name">OPD Register</h1>
+
+    <div id="login-mode">
+      <label>Staff Name</label>
+      <select id="login-select"></select>
+      <label>PIN</label>
+      <input type="password" id="login-pin" maxlength="6" placeholder="4-6 digit PIN" autocomplete="off">
+      <div class="login-error" id="login-error"></div>
+      <button class="btn btn-block" id="login-btn">Log In &rarr;</button>
+      <div class="login-toggle"><a id="show-register">+ Add new staff login</a></div>
+    </div>
+
+    <div id="register-mode" style="display:none;">
+      <label>Staff Name</label>
+      <input type="text" id="reg-name" placeholder="e.g. Aparna">
+      <label>Set PIN</label>
+      <input type="password" id="reg-pin" maxlength="6" placeholder="4-6 digits">
+      <div class="login-error" id="reg-error"></div>
+      <button class="btn btn-block" id="reg-btn">Create Login</button>
+      <div class="login-toggle"><a id="show-login">&larr; Back to log in</a></div>
+    </div>
+  </div>
+</div>
+
+<div id="app-screen">
+  <div class="topbar">
+    <div class="brand">OPD REGISTER</div>
+    <div class="who">Logged in as <b id="who-name">-</b> &nbsp;|&nbsp; <span id="who-time"></span> &nbsp;<span class="logout-link" id="logout-btn">Log out</span></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" data-tab="new">New Patient</div>
+    <div class="tab" data-tab="list">Patient List</div>
+    <div class="tab" data-tab="pending">Pending Payments</div>
+    <div class="tab" data-tab="today">Today's Cash</div>
+    <div class="tab" data-tab="backup">Backup</div>
+  </div>
+  <div class="content" id="content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const APP_VERSION = '2.0';
+
+let staff = [];
+let patients = [];
+let currentUser = null;
+let activeTab = "new";
+let editingId = null;
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function fmtMoney(n){ n = Number(n)||0; return n.toLocaleString('en-IN'); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function niceDate(d){
+  if(!d) return '-';
+  const dt = new Date(d+'T00:00:00');
+  if(isNaN(dt)) return d;
+  return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+}
+
+/* ---------- Storage (local, on this computer) ----------
+   Desktop app: saved as a file in the user's AppData folder (survives
+   browser clean-ups). Browser: saved in localStorage on this laptop.
+   Either way nothing leaves the computer unless you export a backup. */
+const LS_KEY = 'opd-register-data-v1';
+
+function readStore(){
+  try{
+    const raw = window.desktopStore ? window.desktopStore.read() : localStorage.getItem(LS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function writeStore(){
+  const payload = JSON.stringify({staff, patients, savedAt:new Date().toISOString()});
+  try{
+    if(window.desktopStore) window.desktopStore.write(payload);
+    else localStorage.setItem(LS_KEY, payload);
+    return true;
+  }catch(e){
+    showToast("Could not save — disk full or storage blocked");
+    return false;
+  }
+}
+function loadAll(){
+  const data = readStore();
+  staff = data.staff || [];
+  patients = data.patients || [];
+  if(staff.length === 0){
+    staff = [{name:"Aparna", pin:"1234"}];
+    writeStore();
+  }
+}
+async function saveStaff(){ writeStore(); }
+async function savePatients(){ writeStore(); }
+
+/* ---------- Backup tab ---------- */
+function downloadFile(name, text, type){
+  const blob = new Blob([text], {type});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+function csvCell(v){ v = (v==null?'':String(v)); return '"'+v.replace(/"/g,'""')+'"'; }
+function exportCSV(){
+  const cols = ['opdNo','regDate','name','mobNo','age','gender','address','city','refBy','refContact','treatment','dayNo','status','diagnosis','patientHistory','consultCharges','electrode','treatmentCharges','cashPay','onlinePay','loginUser'];
+  const head = cols.concat(['total','balance']).map(csvCell).join(',');
+  const lines = patients.slice().sort((a,b)=>Number(a.opdNo)-Number(b.opdNo)).map(p =>
+    cols.map(c=>csvCell(p[c])).concat([csvCell(calcTotal(p)), csvCell(calcBalance(p))]).join(','));
+  downloadFile('opd-patients-'+todayStr()+'.csv', '﻿'+[head].concat(lines).join('\r\n'), 'text/csv;charset=utf-8');
+  showToast('CSV exported — opens in Excel');
+}
+function exportBackup(){
+  downloadFile('opd-backup-'+todayStr()+'.json', JSON.stringify({staff, patients}, null, 2), 'application/json');
+  showToast('Backup file saved to Downloads');
+}
+function importBackup(file){
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const d = JSON.parse(r.result);
+      if(!Array.isArray(d.patients) || !Array.isArray(d.staff)) throw new Error('bad');
+      if(!confirm('This will REPLACE all current data with the backup ('+d.patients.length+' patients). Continue?')) return;
+      patients = d.patients; staff = d.staff;
+      writeStore(); populateLoginSelect(); render();
+      showToast('Backup restored');
+    }catch(e){ showToast('That is not a valid backup file'); }
+  };
+  r.readAsText(file);
+}
+function renderBackup(){
+  return `
+  <div class="card">
+    <h2>Backup &amp; Export</h2>
+    <p class="hint" style="font-size:13px;margin:0 0 14px;">Your data lives only on this computer. Take a backup every day (or after closing time) and keep a copy on a pen drive or email it to yourself.</p>
+    <p style="margin:0 0 16px;font-size:13px;"><b>${patients.length}</b> patients &nbsp;|&nbsp; <b>${staff.length}</b> staff logins</p>
+    <div class="row-actions" style="margin-top:0">
+      <button class="btn" id="bk-export">Save Backup File</button>
+      <button class="btn btn-outline" id="bk-csv">Export to Excel (CSV)</button>
+      <button class="btn btn-outline" id="bk-import">Restore From Backup</button>
+      <input type="file" id="bk-file" accept=".json,application/json" style="display:none">
+    </div>
+  </div>
+  <div class="card">
+    <h2>Staff Logins</h2>
+    ${staff.map(s=>`<div class="staff-list-row"><span>${s.name}</span>${staff.length>1?`<button class="btn btn-outline btn-sm" data-delstaff="${s.name}">Remove</button>`:''}</div>`).join('')}
+    <p class="hint">To add a new staff login, log out and use "+ Add new staff login" on the login screen.</p>
+  </div>`;
+}
+
+/* ---------- Login screen ---------- */
+function populateLoginSelect(){
+  const sel = document.getElementById('login-select');
+  sel.innerHTML = staff.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+}
+document.getElementById('show-register').onclick = ()=>{
+  document.getElementById('login-mode').style.display='none';
+  document.getElementById('register-mode').style.display='block';
+};
+document.getElementById('show-login').onclick = ()=>{
+  document.getElementById('register-mode').style.display='none';
+  document.getElementById('login-mode').style.display='block';
+};
+document.getElementById('reg-btn').onclick = async ()=>{
+  const name = document.getElementById('reg-name').value.trim();
+  const pin = document.getElementById('reg-pin').value.trim();
+  const err = document.getElementById('reg-error');
+  if(!name || !pin){ err.textContent = "Enter a name and PIN."; return; }
+  if(pin.length < 4){ err.textContent = "PIN must be at least 4 digits."; return; }
+  if(staff.find(s=>s.name.toLowerCase()===name.toLowerCase())){ err.textContent = "That name already has a login."; return; }
+  staff.push({name, pin});
+  await saveStaff();
+  populateLoginSelect();
+  document.getElementById('reg-name').value='';
+  document.getElementById('reg-pin').value='';
+  err.textContent='';
+  document.getElementById('show-login').click();
+  showToast("Staff login created");
+};
+document.getElementById('login-btn').onclick = ()=>{
+  const name = document.getElementById('login-select').value;
+  const pin = document.getElementById('login-pin').value.trim();
+  const err = document.getElementById('login-error');
+  const match = staff.find(s=>s.name===name && s.pin===pin);
+  if(!match){ err.textContent = "Wrong PIN. Try again."; return; }
+  err.textContent='';
+  currentUser = name;
+  document.getElementById('login-pin').value='';
+  enterApp();
+};
+document.getElementById('logout-btn').onclick = ()=>{
+  currentUser = null;
+  document.getElementById('app-screen').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+};
+
+function enterApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='block';
+  document.getElementById('who-name').textContent = currentUser;
+  document.getElementById('who-time').textContent = new Date().toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+  activeTab='new'; editingId=null;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab==='new'));
+  render();
+}
+
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.onclick = ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    activeTab = tab.dataset.tab;
+    editingId = null;
+    render();
+  };
+});
+
+/* ---------- Helpers ---------- */
+function nextOpdNo(){
+  if(patients.length===0) return 1;
+  return Math.max(...patients.map(p=>Number(p.opdNo)||0)) + 1;
+}
+function calcTotal(p){
+  return (Number(p.consultCharges)||0) + (Number(p.electrode)||0) + (Number(p.treatmentCharges)||0);
+}
+function calcBalance(p){
+  return calcTotal(p) - ((Number(p.cashPay)||0) + (Number(p.onlinePay)||0));
+}
+
+/* ---------- Render router ---------- */
+function render(){
+  const el = document.getElementById('content');
+  if(activeTab==='new') el.innerHTML = renderForm(editingId ? patients.find(p=>p.id===editingId) : null);
+  if(activeTab==='list') el.innerHTML = renderList();
+  if(activeTab==='pending') el.innerHTML = renderPending();
+  if(activeTab==='today') el.innerHTML = renderToday();
+  if(activeTab==='backup') el.innerHTML = renderBackup();
+  wireEvents();
+}
+
+/* ---------- New Patient / Edit form ---------- */
+function renderForm(p){
+  const isEdit = !!p;
+  const d = p || {
+    opdNo: nextOpdNo(), regDate: todayStr(), name:'', address:'', mobNo:'', city:'', gender:'', age:'',
+    refBy:'', refContact:'', treatment:'', dayNo:'1', status:'New',
+    diagnosis:'', patientHistory:'',
+    consultCharges:'', electrode:'', treatmentCharges:'', cashPay:'', onlinePay:''
+  };
+  return `
+  <div class="card">
+    <h2>${isEdit ? 'Edit Patient — OPD #'+d.opdNo : 'New Patient Registration'}</h2>
+    <div class="grid">
+      <div><label>OPD No.</label><input id="f-opdNo" value="${d.opdNo}" ${isEdit?'disabled':''}></div>
+      <div><label>Reg. Date</label><input type="date" id="f-regDate" value="${d.regDate}"></div>
+      <div><label>Day No.</label><input id="f-dayNo" value="${d.dayNo}"></div>
+
+      <div class="full" style="height:1px;background:var(--line-soft);margin:14px 0 4px;"></div>
+
+      <div><label>Patient Name</label><input id="f-name" value="${d.name||''}" placeholder="Full name"></div>
+      <div><label>Mobile No.</label><input id="f-mobNo" type="tel" inputmode="numeric" maxlength="10" value="${d.mobNo||''}" placeholder="10-digit number" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)"></div>
+      <div><label>Age</label><input id="f-age" value="${d.age||''}"></div>
+
+      <div><label>Address</label><input id="f-address" value="${d.address||''}"></div>
+      <div><label>City</label><input id="f-city" value="${d.city||''}"></div>
+      <div><label>Gender</label>
+        <select id="f-gender">
+          <option value="">Select</option>
+          <option ${d.gender==='Male'?'selected':''}>Male</option>
+          <option ${d.gender==='Female'?'selected':''}>Female</option>
+          <option ${d.gender==='Other'?'selected':''}>Other</option>
+        </select>
+      </div>
+
+      <div class="full" style="height:1px;background:var(--line-soft);margin:14px 0 4px;"></div>
+
+      <div><label>Referred By</label><input id="f-refBy" value="${d.refBy||''}" placeholder="Self / Dr. name"></div>
+      <div><label>Ref. Contact</label><input id="f-refContact" value="${d.refContact||''}"></div>
+      <div><label>Treatment</label><input id="f-treatment" value="${d.treatment||''}"></div>
+
+      <div><label>Status</label>
+        <select id="f-status">
+          <option ${d.status==='New'?'selected':''}>New</option>
+          <option ${d.status==='Continue'?'selected':''}>Continue</option>
+          <option ${d.status==='Completed'?'selected':''}>Completed</option>
+        </select>
+      </div>
+
+      <div class="full"><label>Diagnosis</label><textarea id="f-diagnosis" rows="3" placeholder="Clinical diagnosis / findings">${d.diagnosis||''}</textarea></div>
+      <div class="full"><label>Patient History</label><textarea id="f-patientHistory" rows="4" placeholder="Past treatments, conditions, allergies, relevant background">${d.patientHistory||''}</textarea></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Payment Details</h2>
+    <div class="grid">
+      <div><label>Consultation Chgs.</label><input id="f-consultCharges" type="number" value="${d.consultCharges}" oninput="updateTotalPreview()"></div>
+      <div><label>Electrode Chgs.</label><input id="f-electrode" type="number" value="${d.electrode}" oninput="updateTotalPreview()"></div>
+      <div><label>Treatment Chgs.</label><input id="f-treatmentCharges" type="number" value="${d.treatmentCharges}" oninput="updateTotalPreview()"></div>
+
+      <div><label>Cash Pay</label><input id="f-cashPay" type="number" value="${d.cashPay}" oninput="updateTotalPreview()"></div>
+      <div><label>Online Pay</label><input id="f-onlinePay" type="number" value="${d.onlinePay}" oninput="updateTotalPreview()"></div>
+      <div><label>Total Charges</label><input id="f-total-preview" value="0" disabled></div>
+    </div>
+    <p class="hint" id="balance-preview"></p>
+    <div class="row-actions">
+      <button class="btn" id="save-btn">${isEdit?'Update Data':'Save Data'}</button>
+      ${isEdit ? '<button class="btn btn-danger" id="delete-btn">Delete Data</button><button class="btn btn-outline" id="cancel-btn">Cancel</button>' : ''}
+    </div>
+  </div>`;
+}
+
+function updateTotalPreview(){
+  const g = id => Number(document.getElementById(id).value)||0;
+  const total = g('f-consultCharges') + g('f-electrode') + g('f-treatmentCharges');
+  const paid = g('f-cashPay') + g('f-onlinePay');
+  const bal = total - paid;
+  document.getElementById('f-total-preview').value = fmtMoney(total);
+  const bp = document.getElementById('balance-preview');
+  if(bp) bp.innerHTML = bal > 0
+    ? `Balance due: <b style="color:var(--red)">₹${fmtMoney(bal)}</b>`
+    : `<span style="color:var(--green)">Fully paid</span>`;
+}
+
+async function handleSave(){
+  const val = id => document.getElementById(id).value.trim();
+  const rec = {
+    id: editingId || (Date.now()+'-'+Math.random().toString(36).slice(2,7)),
+    opdNo: val('f-opdNo'),
+    regDate: val('f-regDate') || todayStr(),
+    dayNo: val('f-dayNo'),
+    name: val('f-name'),
+    mobNo: val('f-mobNo'),
+    age: val('f-age'),
+    address: val('f-address'),
+    city: val('f-city'),
+    gender: val('f-gender'),
+    refBy: val('f-refBy'),
+    refContact: val('f-refContact'),
+    treatment: val('f-treatment'),
+    status: val('f-status'),
+    diagnosis: val('f-diagnosis'),
+    patientHistory: val('f-patientHistory'),
+    consultCharges: val('f-consultCharges'),
+    electrode: val('f-electrode'),
+    treatmentCharges: val('f-treatmentCharges'),
+    cashPay: val('f-cashPay'),
+    onlinePay: val('f-onlinePay'),
+    loginUser: currentUser,
+    updatedAt: new Date().toISOString()
+  };
+  if(!rec.name){ showToast("Patient name is required"); return; }
+  if(editingId){
+    const idx = patients.findIndex(p=>p.id===editingId);
+    patients[idx] = rec;
+  } else {
+    patients.push(rec);
+  }
+  await savePatients();
+  showToast(editingId ? "Patient updated" : "Patient saved");
+  editingId = null;
+  activeTab = 'new';
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab==='new'));
+  render();
+}
+
+async function handleDelete(){
+  if(!confirm("Delete this patient record? This cannot be undone.")) return;
+  patients = patients.filter(p=>p.id!==editingId);
+  await savePatients();
+  showToast("Patient deleted");
+  editingId = null;
+  render();
+}
+
+/* ---------- Patient List ---------- */
+let listSearch = '';
+function renderList(){
+  const q = listSearch.toLowerCase();
+  const rows = patients.filter(p =>
+    !q || (p.name||'').toLowerCase().includes(q) || (p.mobNo||'').includes(q) || String(p.opdNo).includes(q)
+  ).sort((a,b)=> Number(b.opdNo)-Number(a.opdNo));
+
+  return `
+  <div class="card">
+    <h2>Patient List</h2>
+    <div class="searchbar">
+      <input id="list-search" placeholder="Search by name, mobile, or OPD no." value="${listSearch}">
+    </div>
+    ${rows.length===0 ? `<div class="empty-state"><b>No patients found</b>Try a different search, or register a new patient.</div>` :
+    `<div style="overflow-x:auto;"><table>
+      <thead><tr>
+        <th>OPD</th><th>Name</th><th>Mobile</th><th>City</th><th>Treatment</th><th>Status</th><th class="num">Total</th><th class="num">Balance</th><th>Entered By</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(p=>{
+          const bal = calcBalance(p);
+          return `<tr>
+            <td>${p.opdNo}</td>
+            <td>${p.name}</td>
+            <td>${p.mobNo||'-'}</td>
+            <td>${p.city||'-'}</td>
+            <td>${p.treatment||'-'}</td>
+            <td>${p.status||'-'}</td>
+            <td class="num">₹${fmtMoney(calcTotal(p))}</td>
+            <td class="num">${bal>0 ? `<span class="stamp due">Due ₹${fmtMoney(bal)}</span>` : `<span class="stamp paid">Paid</span>`}</td>
+            <td>${p.loginUser||'-'}</td>
+            <td><button class="btn btn-outline btn-sm" data-edit="${p.id}">Edit</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`}
+  </div>`;
+}
+
+/* ---------- Pending Payments ---------- */
+let pendingSearch = '';
+function renderPending(){
+  const q = pendingSearch.toLowerCase();
+  const rows = patients.filter(p => calcBalance(p) > 0)
+    .filter(p => !q || (p.name||'').toLowerCase().includes(q) || (p.mobNo||'').includes(q))
+    .sort((a,b)=> Number(b.opdNo)-Number(a.opdNo));
+
+  const totalDue = rows.reduce((s,p)=>s+calcBalance(p),0);
+
+  return `
+  <div class="totals-strip">
+    <div class="total-pill"><div class="lbl">Pending Patients</div><div class="val">${rows.length}</div></div>
+    <div class="total-pill"><div class="lbl">Total Outstanding</div><div class="val" style="color:var(--red)">₹${fmtMoney(totalDue)}</div></div>
+  </div>
+  <div class="card">
+    <h2>Pending Payment List</h2>
+    <div class="searchbar"><input id="pending-search" placeholder="Search patient name or mobile" value="${pendingSearch}"></div>
+    ${rows.length===0 ? `<div class="empty-state"><b>All clear</b>No pending balances right now.</div>` :
+    `<div style="overflow-x:auto;"><table>
+      <thead><tr><th>OPD</th><th>Name</th><th>Mobile</th><th class="num">Total</th><th class="num">Paid</th><th class="num">Balance</th><th>Collect Cash</th><th>Collect Online</th><th></th></tr></thead>
+      <tbody>
+        ${rows.map(p=>{
+          const total = calcTotal(p);
+          const paidSoFar = (Number(p.cashPay)||0)+(Number(p.onlinePay)||0);
+          const bal = calcBalance(p);
+          return `<tr>
+            <td>${p.opdNo}</td><td>${p.name}</td><td>${p.mobNo||'-'}</td>
+            <td class="num">₹${fmtMoney(total)}</td>
+            <td class="num">₹${fmtMoney(paidSoFar)}</td>
+            <td class="num"><span class="stamp due">₹${fmtMoney(bal)}</span></td>
+            <td><div class="mini"><input type="number" placeholder="0" id="add-cash-${p.id}"></div></td>
+            <td><div class="mini"><input type="number" placeholder="0" id="add-online-${p.id}"></div></td>
+            <td><button class="btn btn-sm" data-collect="${p.id}">Save</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`}
+  </div>`;
+}
+
+async function handleCollect(id){
+  const p = patients.find(x=>x.id===id);
+  if(!p) return;
+  const addCash = Number(document.getElementById('add-cash-'+id).value)||0;
+  const addOnline = Number(document.getElementById('add-online-'+id).value)||0;
+  if(addCash===0 && addOnline===0){ showToast("Enter an amount to collect"); return; }
+  p.cashPay = (Number(p.cashPay)||0) + addCash;
+  p.onlinePay = (Number(p.onlinePay)||0) + addOnline;
+  p.loginUser = currentUser;
+  p.updatedAt = new Date().toISOString();
+  await savePatients();
+  showToast("Payment recorded");
+  render();
+}
+
+/* ---------- Today's Cash ---------- */
+function renderToday(){
+  const today = todayStr();
+  const rows = patients.filter(p => (p.updatedAt||'').slice(0,10)===today || p.regDate===today);
+  const cashTotal = rows.reduce((s,p)=>s+(Number(p.cashPay)||0),0);
+  const onlineTotal = rows.reduce((s,p)=>s+(Number(p.onlinePay)||0),0);
+
+  return `
+  <div class="totals-strip">
+    <div class="total-pill"><div class="lbl">Cash Collected</div><div class="val">₹${fmtMoney(cashTotal)}</div></div>
+    <div class="total-pill"><div class="lbl">Online Collected</div><div class="val">₹${fmtMoney(onlineTotal)}</div></div>
+    <div class="total-pill"><div class="lbl">Total Today</div><div class="val" style="color:var(--green)">₹${fmtMoney(cashTotal+onlineTotal)}</div></div>
+  </div>
+  <div class="card">
+    <h2>Today's Register — ${niceDate(today)}</h2>
+    ${rows.length===0 ? `<div class="empty-state"><b>Nothing recorded yet today</b>New registrations and payments will appear here.</div>` :
+    `<div style="overflow-x:auto;"><table>
+      <thead><tr><th>OPD</th><th>Name</th><th class="num">Cash</th><th class="num">Online</th><th>Entered By</th></tr></thead>
+      <tbody>
+        ${rows.map(p=>`<tr>
+          <td>${p.opdNo}</td><td>${p.name}</td>
+          <td class="num">₹${fmtMoney(p.cashPay)}</td>
+          <td class="num">₹${fmtMoney(p.onlinePay)}</td>
+          <td>${p.loginUser||'-'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>`}
+  </div>`;
+}
+
+/* ---------- Event wiring per render ---------- */
+function wireEvents(){
+  const saveBtn = document.getElementById('save-btn');
+  if(saveBtn) saveBtn.onclick = handleSave;
+  const delBtn = document.getElementById('delete-btn');
+  if(delBtn) delBtn.onclick = handleDelete;
+  const cancelBtn = document.getElementById('cancel-btn');
+  if(cancelBtn) cancelBtn.onclick = ()=>{ editingId=null; render(); };
+  if(document.getElementById('f-total-preview')) updateTotalPreview();
+
+  document.querySelectorAll('[data-edit]').forEach(btn=>{
+    btn.onclick = ()=>{
+      editingId = btn.dataset.edit;
+      activeTab = 'new';
+      document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab==='new'));
+      render();
+    };
+  });
+  document.querySelectorAll('[data-collect]').forEach(btn=>{
+    btn.onclick = ()=>handleCollect(btn.dataset.collect);
+  });
+
+  const bkE = document.getElementById('bk-export');
+  if(bkE){
+    bkE.onclick = exportBackup;
+    document.getElementById('bk-csv').onclick = exportCSV;
+    const f = document.getElementById('bk-file');
+    document.getElementById('bk-import').onclick = ()=>f.click();
+    f.onchange = ()=>{ if(f.files[0]) importBackup(f.files[0]); f.value=''; };
+  }
+  document.querySelectorAll('[data-delstaff]').forEach(btn=>{
+    btn.onclick = async ()=>{
+      const n = btn.dataset.delstaff;
+      if(n===currentUser){ showToast("You can't remove the login you are using"); return; }
+      if(!confirm('Remove login for '+n+'?')) return;
+      staff = staff.filter(x=>x.name!==n); await saveStaff(); render();
+    };
+  });
+  const ls = document.getElementById('list-search');
+  if(ls){ ls.oninput = ()=>{ listSearch = ls.value; render(); ls_focus(); }; }
+  const ps = document.getElementById('pending-search');
+  if(ps){ ps.oninput = ()=>{ pendingSearch = ps.value; render(); ps_focus(); }; }
+}
+function ls_focus(){ const el=document.getElementById('list-search'); if(el){ el.focus(); el.setSelectionRange(el.value.length,el.value.length);} }
+function ps_focus(){ const el=document.getElementById('pending-search'); if(el){ el.focus(); el.setSelectionRange(el.value.length,el.value.length);} }
+
+/* ---------- Boot ---------- */
+loadAll();
+populateLoginSelect();
+</script>
+</body>
+</html>
